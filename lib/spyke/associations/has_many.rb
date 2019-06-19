@@ -2,9 +2,9 @@ module Spyke
   module Associations
     class HasMany < Association
       def initialize(*args)
-        super
-        @options.reverse_merge!(uri: "#{parent_path}/:#{foreign_key}/#{@name}/(:#{primary_key})")
-        @params[foreign_key] = parent.id
+	      super
+        ids = get_relation_ids()
+        @params[:relation_ids] = ids
       end
 
       def load
@@ -21,6 +21,12 @@ module Spyke
       end
 
       private
+
+        def get_relation_ids
+          relation_field = @options[:relation_field]
+          field = parent.attributes[relation_field.to_s]
+          field.map{|i| i['value']}
+        end
 
         def parent_path
           parent.class.model_name.element.pluralize

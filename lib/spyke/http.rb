@@ -46,6 +46,7 @@ module Spyke
         def send_request(method, path, params)
           connection.send(method) do |request|
             if method == :get
+              params.delete(:relation_ids)
               request.url path.to_s, params
             else
               request.url path.to_s
@@ -56,8 +57,8 @@ module Spyke
             raise ConnectionError
         end
 
-        def scoped_request(method)
-          uri = new.uri
+        def scoped_request(method, id=nil)
+          uri = new.uri(id)
           params = current_scope.params.except(*uri.variables)
           request(method, uri, params)
         end
@@ -87,7 +88,6 @@ module Spyke
       define_method(method) do |action = nil, params = {}|
         params = action if action.is_a?(Hash)
         path = resolve_path_from_action(action)
-
         result = self.class.request(method, path, params)
 
         add_errors_to_model(result.errors)
@@ -95,7 +95,8 @@ module Spyke
       end
     end
 
-    def uri
+    def uri(id=nil)
+      attributes[:id] = id unless id.nil?
       Path.new(@uri_template, attributes) if @uri_template
     end
 

@@ -31,7 +31,21 @@ module Spyke
       end
 
       def fetch
-        scoped_request :get
+         if current_scope.params[:relation_ids]
+            result = []
+            current_scope.params[:relation_ids].each do |id|
+              result << scoped_request(:get, id)
+            end
+
+            response = Struct.new(:data, :metadata, :errors)
+            response = response.new(
+              result.map{|i| i.body['data']},
+              result.first.body['metadata'],
+              result.map{|i| i.body['errors']},
+            )
+        else
+          scoped_request :get
+        end
       end
 
       def create(attributes = {})
@@ -46,11 +60,7 @@ module Spyke
     end
 
     def to_params
-      if param_root
-        { param_root => params_not_embedded_in_url }
-      else
-        params_not_embedded_in_url
-      end
+      params_not_embedded_in_url
     end
 
     def persisted?
