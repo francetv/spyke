@@ -27,7 +27,9 @@ module Spyke
           
           token_proc = Proc.new do |response|
             if response.status == 401
-              tkn = Gluu::Auth.get_scim_token
+              meth = connection.params["token_generator"]
+              # tkn = .Gluu::Auth.get_scim_token
+              tkn = meth[0].constantize.send(meth[1])
               connection.headers['Authorization'] = "Bearer #{tkn}"
               response = send_request(method, path, params)
               token_proc.call(response)
