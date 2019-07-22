@@ -11,7 +11,8 @@ module Spyke
     end
 
     def data
-      body[:data]
+      e = body[:data]
+      e.blank? ? {} : e
     end
 
     def metadata
@@ -19,7 +20,8 @@ module Spyke
     end
 
     def errors
-      body[:errors] || []
+      e = body[:errors]
+      e.blank? ? {} : e
     end
   end
 end
