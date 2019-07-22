@@ -3,7 +3,7 @@ module Spyke
     extend ActiveSupport::Concern
 
     included do
-      define_model_callbacks :create, :update, :save
+      define_model_callbacks :create, :update, :save, :destroy
 
       class_attribute :include_root
       self.include_root = true
@@ -36,11 +36,10 @@ module Spyke
             current_scope.params[:relation_ids].each do |id|
               result << scoped_request(:get, id)
             end
-
             response = Struct.new(:data, :metadata, :errors)
             response = response.new(
               result.map{|i| i.body['data']},
-              result.first.body['metadata'],
+              result.first.try(:body).try(:[], 'metadata') ,
               result.map{|i| i.body['errors']},
             )
         else
